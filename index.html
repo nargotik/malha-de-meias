@@ -126,7 +126,7 @@ button:disabled{opacity:.5;cursor:default}
       <label class="check"><input type="checkbox" id="sepbg" checked> Separar fundo dos contornos</label>
       <p class="hint">O preto dentro das figuras passa à cor mais escura, para poderes trocar a cor do fundo (cor 0) sem perder contornos.</p>
       <div class="row"><label for="bgprevOn">Trocar a cor do fundo</label><span class="val"><input type="checkbox" id="bgprevOn" checked aria-label="Trocar a cor do fundo"> <input type="color" id="bgprev" value="#6ebe28" aria-label="Cor do fundo"></span></div>
-      <p class="hint">Aplica-se à pré-visualização e aos ficheiros descarregados (cor 0).</p>
+      <p class="hint">Aplica-se à pré-visualização e aos ficheiros (cor 0). O fundo não conta para «Cores (fios)»: 7 cores dão 7 + fundo.</p>
     </fieldset>
   </aside>
 
@@ -322,7 +322,7 @@ let pending=0;
 function run(){clearTimeout(pending);pending=setTimeout(()=>{try{process();status("")}catch(e){status(e.message,true)}},60)}
 function process(){
   if(!S.img)return;
-  const W=Math.max(8,Math.min(400,Math.round(+$("w").value||100))),K=Math.max(2,Math.min(16,Math.round(+$("k").value||7)));
+  const W=Math.max(8,Math.min(400,Math.round(+$("w").value||100))),bgx=bgExtra(),K=Math.max(2,Math.min(16-bgx,Math.round(+$("k").value||7)))+bgx;
   const R=+$("ratio").value;
   const strip=medianFilter(extract(),+$("med").value);
   const H=Math.max(1,Math.round(strip.h*W/strip.w*R));
@@ -367,14 +367,16 @@ const hex=p=>"#"+p.map(v=>v.toString(16).padStart(2,"0")).join("");
 function drawPalette(){
   const cnt=S.pal.map(()=>0);S.idx.forEach(v=>cnt[v]++);const tot=S.idx.length;
   $("dims").textContent=S.W+" × "+S.H+" pontos";
-  $("summary").innerHTML=`<div><b>${S.W}</b> pontos de largura</div><div><b>${S.H}</b> carreiras</div><div><b>${S.pal.length}</b> cores</div>`;
+  $("summary").innerHTML=`<div><b>${S.W}</b> pontos de largura</div><div><b>${S.H}</b> carreiras</div><div><b>${S.pal.length-bgExtra()}</b> cores${bgExtra()?" + fundo":""}</div>`;
   const box=$("pal");box.innerHTML="";
   outPal().forEach((p,k)=>{const d=document.createElement("div");d.className="sw";
     d.innerHTML=`<input type="color" id="col${k}" value="${hex(p)}" aria-label="Cor ${k}"><span class="idx">${k} · ${hex(p)}</span><button type="button" title="Juntar à cor mais parecida">juntar</button><span class="cnt">${cnt[k]} pts · ${(cnt[k]/tot*100).toFixed(1)}%</span>`;
     d.querySelector("input").addEventListener("change",e=>{const v=e.target.value;
       if(k===0&&$("bgprevOn").checked){$("bgprev").value=v;drawPattern();drawPalette();return}S.pal[k]=[1,3,5].map(i=>parseInt(v.slice(i,i+2),16));S.locked=true;run()});
     const b=d.querySelector("button");b.disabled=S.pal.length<=2;
-    b.addEventListener("click",()=>{S.pal.splice(k,1);S.locked=true;$("k").value=S.pal.length;run()});
+    b.disabled=S.pal.length<=2||(k===0&&bgExtra());
+    b.addEventListener("click",()=>{S.pal.splice(k,1);S.locked=true;$("k").value=S.pal.length-bgExtra();run()});
+    if(k===0&&bgExtra())d.querySelector(".idx").textContent="0 · fundo";
     box.appendChild(d)});
   $("palNote").textContent=S.locked?"Paleta fixa (editada à mão). «Recalcular cores» volta a escolher as cores automaticamente.":"Clica numa cor para a mudar, ou «juntar» para a fundir com a mais parecida.";
 }
@@ -404,6 +406,8 @@ function png8(){const W=S.W,H=S.H,raw=new Uint8Array((W+1)*H);for(let y=0;y<H;y+
 function cat(arr){let n=0;arr.forEach(a=>n+=a.length);const o=new Uint8Array(n);let p=0;arr.forEach(a=>{o.set(a,p);p+=a.length});return o}
 function csv(){let s="";for(let y=0;y<S.H;y++)s+=Array.from(S.idx.subarray(y*S.W,(y+1)*S.W)).join(",")+"\n";return s}
 /* paleta exportada: cor 0 (fundo) trocada pela cor escolhida, se ativo */
+/* com fundo trocado, o fundo é uma cor extra que não conta para «Cores (fios)» */
+function bgExtra(){return $("bgprevOn").checked?1:0}
 function bgColor(){if(!$("bgprevOn").checked)return null;const v=$("bgprev").value;return[1,3,5].map(i=>parseInt(v.slice(i,i+2),16))}
 function outPal(){const b=bgColor();return S.pal.map((p,k)=>k===0&&b?b:p)}
 function legend(){return "indice,cor,pontos\n"+outPal().map((p,k)=>`${k},${hex(p)},${S.idx.filter(v=>v===k).length}`).join("\n")+"\n"}
@@ -426,7 +430,7 @@ async function save(filename,data){
   let dl=null;try{dl=window.claude?.use?await window.claude.use("downloads"):null}catch(e){}
   if(dl){try{await dl.save({filename,data:new Blob([data])});status("Guardado: "+filename)}catch(e){status(e.code==="declined"?"Descarga cancelada.":"Não foi possível guardar ("+(e.code||"erro")+").",e.code!=="declined")}return}
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data]));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);status("Guardado: "+filename)}
-const base=()=>`${S.name}_${S.W}x${S.H}_${S.pal.length}cores`;
+const base=()=>`${S.name}_${S.W}x${S.H}_${S.pal.length-bgExtra()}cores${bgExtra()?"+fundo":""}`;
 $("dlZip").addEventListener("click",()=>{if(!S.idx)return;const b=base(),e=new TextEncoder();
   save(b+".zip",zip([{name:b+".bmp",data:bmp8()},{name:b+".png",data:png8()},{name:b+"_mapa.csv",data:e.encode(csv())},{name:b+"_cores.csv",data:e.encode(legend())}]))});
 /* BMP solto só fora do claude.ai (lá a extensão .bmp não é permitida; vai no ZIP) */
@@ -442,7 +446,8 @@ for(const id in fmt){const el=$(id);const upd=()=>{$(id+"V").textContent=fmt[id]
 ["w","k"].forEach(id=>$(id).addEventListener("change",()=>{if(id==="k")S.locked=false;run()}));
 document.querySelectorAll("input[name=mode],input[name=full]").forEach(r=>r.addEventListener("change",run));
 $("foot").addEventListener("change",run);$("sepbg").addEventListener("change",run);
-["bgprev","bgprevOn"].forEach(id=>$(id).addEventListener("input",()=>{if(S.idx){drawPattern();drawPalette()}}));
+$("bgprev").addEventListener("input",()=>{if(S.idx){drawPattern();drawPalette()}});
+$("bgprevOn").addEventListener("change",()=>{S.locked=false;run()});
 ["grid","aspect"].forEach(id=>$(id).addEventListener("change",drawPattern));
 
 if(SAMPLE)loadImageURL(SAMPLE).then(i=>{S.img=toCanvas(i);run()}).catch(()=>{});
