@@ -1,0 +1,450 @@
+<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Malha de Meias</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: bancada de trabalho — painel de afinação à esquerda, folha de pontos à direita */
+:root{
+  --bg:#e9ecee; --panel:#f8f9fa; --ink:#18202b; --muted:#5b6673; --line:#cdd3d9;
+  --accent:#2f6b4f; --accent-ink:#ffffff; --grid:#7f8cff; --warn:#a6461f;
+  --f-display:"Archivo",system-ui,sans-serif; --f-body:"Archivo",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161c; --panel:#1b2129; --ink:#e6eaef; --muted:#97a2ae; --line:#2e3742;
+  --accent:#5fb48a; --accent-ink:#0b1a12; --grid:#8f9bff; --warn:#e39a6e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161c; --panel:#1b2129; --ink:#e6eaef; --muted:#97a2ae; --line:#2e3742;
+  --accent:#5fb48a; --accent-ink:#0b1a12; --grid:#8f9bff; --warn:#e39a6e; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+header{max-width:1280px;margin:0 auto 18px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+h1{font-family:var(--f-display);font-weight:800;font-size:1.7rem;letter-spacing:-.01em;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--muted);max-width:62ch}
+main{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:330px minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:860px){main{grid-template-columns:minmax(0,1fr)}}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:16px;position:sticky;top:max(12px,env(safe-area-inset-top,0px))}
+@media (max-width:860px){aside{position:static}}
+fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+legend{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;padding:0}
+.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px}
+.row label{font-size:.9rem}
+.row output,.row .val{font-family:var(--f-mono);font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.row input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--accent)}
+.hint{font-size:.78rem;color:var(--muted);margin:-4px 0 0}
+input[type=number]{width:84px;font:inherit;font-family:var(--f-mono);padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{text-align:center;padding:7px 4px;font-size:.86rem;cursor:pointer}
+.seg input:checked+label{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.seg input:focus-visible+label{outline:2px solid var(--accent);outline-offset:-3px}
+.check{display:flex;gap:8px;align-items:center;font-size:.9rem}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+button,.filebtn{font:inherit;font-weight:600;border-radius:7px;padding:9px 12px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,.filebtn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+.drop{border:1.5px dashed var(--line);border-radius:9px;padding:14px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}
+.drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.drop small{color:var(--muted)}
+.filebtn input{display:none}
+.fname{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);word-break:break-all}
+.work{display:flex;flex-direction:column;gap:18px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.card h2{font-size:1rem;margin:0 0 10px;font-weight:700;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.card h2 span{font-family:var(--f-mono);font-weight:400;font-size:.8rem;color:var(--muted)}
+.summary{display:flex;flex-wrap:wrap;gap:8px 22px;font-family:var(--f-mono);font-size:.85rem}
+.summary b{font-size:1.15rem;font-family:var(--f-display);font-weight:800}
+.pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-top:12px}
+.sw{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px 8px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-family:var(--f-mono);font-size:.76rem}
+.sw input[type=color]{width:34px;height:34px;border:1px solid var(--line);border-radius:6px;padding:0;background:none;cursor:pointer;grid-row:span 2}
+.sw .idx{font-weight:600;color:var(--ink)}
+.sw .cnt{color:var(--muted);grid-column:2}
+.sw button{grid-row:span 2;padding:3px 7px;font-size:.72rem;font-weight:500}
+.views{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:620px){.views{grid-template-columns:minmax(0,1fr)}}
+.srcbox canvas{display:block;max-width:180px;height:auto;border-radius:6px;background:#fff}
+.patbox{overflow:auto;max-height:78vh;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.patbox canvas{display:block;image-rendering:pixelated}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-bottom:10px}
+.toolbar .row{grid-template-columns:auto 120px auto}
+.toolbar .row input[type=range]{grid-column:auto}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.status{font-size:.82rem;color:var(--muted);min-height:1.2em}
+.status.err{color:var(--warn)}
+.cap{font-size:.78rem;color:var(--muted);margin:8px 0 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header>
+  <h1>Malha de Meias</h1>
+  <p>Converte o desenho de uma meia (PDF ou imagem) num padrão de jacquard com a largura em pontos e o número de cores da tua máquina.</p>
+</header>
+
+<main>
+  <aside>
+    <div class="drop" id="drop">
+      <label class="filebtn">Escolher PDF ou imagem<input type="file" id="file" accept="application/pdf,image/*"></label>
+      <small>ou arrasta o ficheiro para aqui</small>
+      <div class="fname" id="fname">Nenhum ficheiro escolhido</div>
+    </div>
+
+    <fieldset>
+      <legend>Máquina</legend>
+      <div class="row"><label for="w">Largura do desenho (pontos)</label><input type="number" id="w" min="8" max="400" value="100"></div>
+      <p class="hint">Num cilindro de 200 agulhas, a frente da meia tem 100.</p>
+      <div class="row"><label for="k">Cores (fios)</label><input type="number" id="k" min="2" max="16" value="7"></div>
+      <div class="row"><label for="ratio">Proporção do ponto</label><output id="ratioV">1,35</output>
+        <input type="range" id="ratio" min="1" max="2" step="0.01" value="1.35"></div>
+      <p class="hint">Carreiras por cm ÷ pontos por cm. Mede numa amostra.</p>
+      <div class="row"><label for="full">Saída</label><span></span></div>
+      <div class="seg" role="radiogroup" aria-label="Saída">
+        <input type="radio" name="full" id="fullF" value="front" checked><label for="fullF">Só frente</label>
+        <input type="radio" name="full" id="fullD" value="double"><label for="fullD">Volta (×2)</label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Recorte</legend>
+      <div class="seg" role="radiogroup" aria-label="Modo de recorte">
+        <input type="radio" name="mode" id="modeS" value="sock" checked><label for="modeS">Endireitar meia</label>
+        <input type="radio" name="mode" id="modeR" value="rect"><label for="modeR">Imagem inteira</label>
+      </div>
+      <label class="check"><input type="checkbox" id="foot"> Parar no calcanhar</label>
+      <p class="hint">Desligado: o padrão vai do punho até à ponta do pé.</p>
+      <div class="row"><label for="top">Cortar em cima</label><output id="topV">0%</output><input type="range" id="top" min="0" max="60" value="0"></div>
+      <div class="row"><label for="bot">Cortar em baixo</label><output id="botV">0%</output><input type="range" id="bot" min="0" max="60" value="0"></div>
+      <div class="row"><label for="inset">Margem lateral</label><output id="insetV">1%</output><input type="range" id="inset" min="0" max="10" value="1"></div>
+      <div class="row"><label for="thr">Fundo branco até</label><output id="thrV">200</output><input type="range" id="thr" min="120" max="250" value="200"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Limpeza</legend>
+      <div class="row"><label for="med">Suavizar brilhos</label><output id="medV">2</output><input type="range" id="med" min="0" max="4" value="2"></div>
+      <div class="row"><label for="iso">Remover pontos soltos</label><output id="isoV">2</output><input type="range" id="iso" min="0" max="4" value="2"></div>
+      <label class="check"><input type="checkbox" id="sepbg" checked> Separar fundo dos contornos</label>
+      <p class="hint">O preto dentro das figuras passa à cor mais escura, para poderes trocar a cor do fundo (cor 0) sem perder contornos.</p>
+      <div class="row"><label for="bgprevOn">Trocar a cor do fundo</label><span class="val"><input type="checkbox" id="bgprevOn" checked aria-label="Trocar a cor do fundo"> <input type="color" id="bgprev" value="#6ebe28" aria-label="Cor do fundo"></span></div>
+      <p class="hint">Aplica-se à pré-visualização e aos ficheiros descarregados (cor 0).</p>
+    </fieldset>
+  </aside>
+
+  <section class="work">
+    <div class="card">
+      <h2>Padrão <span id="dims">—</span></h2>
+      <div class="summary" id="summary">Escolhe o PDF ou a imagem da meia para começar. O padrão aparece aqui.</div>
+      <div class="pal" id="pal"></div>
+      <p class="cap" id="palNote">Clica numa cor para a mudar. A paleta fica fixa até carregares em «Recalcular cores».</p>
+      <div class="actions" style="margin-top:12px">
+        <button class="primary" id="dlZip">Descarregar ZIP (BMP + PNG + CSV)</button>
+        <button id="dlBmp" hidden>Só BMP (Photon)</button>
+        <button id="dlPng">Só PNG</button>
+        <button id="recalc">Recalcular cores</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div class="row"><label for="zoom">Zoom</label><input type="range" id="zoom" min="2" max="16" value="5"><output id="zoomV">5</output></div>
+        <label class="check"><input type="checkbox" id="grid" checked> Grelha</label>
+        <label class="check"><input type="checkbox" id="aspect" checked> Ver como malha</label>
+      </div>
+      <div class="views">
+        <div class="srcbox"><canvas id="srcC" aria-label="Original com a zona usada"></canvas><p class="cap">Zona usada a verde</p></div>
+        <div class="patbox"><canvas id="patC" aria-label="Padrão em pontos"></canvas></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/pdf.worker.min.js"></script>
+<script>
+const SAMPLE="";
+const $=id=>document.getElementById(id);
+const S={img:null,name:"JAI_SURVECU_AU_REPAS_DE_NOEL",strip:null,region:null,small:null,idx:null,pal:null,locked:false,W:0,H:0};
+const status=(t,err)=>{const e=$("status");e.textContent=t||"";e.classList.toggle("err",!!err)};
+
+/* ---------- carregar ---------- */
+function loadImageURL(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error("Não consegui abrir esta imagem."));i.src=url})}
+function toCanvas(src,maxDim=2200){const s=Math.min(1,maxDim/Math.max(src.width,src.height));const c=document.createElement("canvas");c.width=Math.round(src.width*s);c.height=Math.round(src.height*s);const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(src,0,0,c.width,c.height);return c}
+async function loadPDF(buf){
+  if(!window.pdfjsLib) throw new Error("O leitor de PDF não carregou. Exporta a página como PNG e tenta outra vez.");
+  pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdf.worker.min.js";
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;const page=await pdf.getPage(1);
+  const v0=page.getViewport({scale:1});const vp=page.getViewport({scale:2000/v0.height});
+  const c=document.createElement("canvas");c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+  const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);
+  await page.render({canvasContext:g,viewport:vp}).promise;return c}
+async function handleFile(f){
+  if(!f)return;status("A abrir "+f.name+"…");
+  try{
+    let c;
+    if(f.type==="application/pdf"||/\.pdf$/i.test(f.name)) c=await loadPDF(await f.arrayBuffer());
+    else{const u=URL.createObjectURL(f);c=toCanvas(await loadImageURL(u));URL.revokeObjectURL(u)}
+    S.img=c;S.name=f.name.replace(/\.[^.]+$/,"").replace(/[^\w-]+/g,"_");S.locked=false;
+    $("fname").textContent=f.name;status("");run();
+  }catch(e){status(e.message||"Não consegui abrir o ficheiro.",true)}
+}
+$("file").addEventListener("change",e=>handleFile(e.target.files[0]));
+const drop=$("drop");
+["dragenter","dragover"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add("over")}));
+["dragleave","drop"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove("over")}));
+drop.addEventListener("drop",e=>handleFile(e.dataTransfer.files[0]));
+
+/* ---------- recorte ---------- */
+function median(a){const b=Float64Array.from(a).sort();return b[b.length>>1]}
+function extract(){
+  const c=S.img,w=c.width,h=c.height,d=c.getContext("2d").getImageData(0,0,w,h).data;
+  const thr=+$("thr").value,mode=document.querySelector("input[name=mode]:checked").value;
+  const top=+$("top").value/100,bot=+$("bot").value/100,ins=+$("inset").value/100;
+  let rows=[],L=[],R=[],SW;
+  if(mode==="sock"){
+    const Lr=new Int32Array(h).fill(-1),Rr=new Int32Array(h).fill(-1);
+    for(let y=0;y<h;y++){let o=y*w*4;for(let x=0;x<w;x++){const i=o+x*4;if(Math.min(d[i],d[i+1],d[i+2])<thr){if(Lr[y]<0)Lr[y]=x;Rr[y]=x}}}
+    const ys=[];for(let y=0;y<h;y++)if(Lr[y]>=0&&Rr[y]-Lr[y]>w*0.05)ys.push(y);
+    if(ys.length<20)throw new Error("Não encontrei a meia. Baixa «Fundo branco até» ou usa «Imagem inteira».");
+    const a=ys[0],b=ys[ys.length-1],span=b-a;
+    const ws=[];for(let y=a+Math.round(span*.15);y<a+span*.45;y++)if(Lr[y]>=0)ws.push(Rr[y]-Lr[y]);
+    const legW=median(ws);
+    let y0=ys.find(y=>Rr[y]-Lr[y]>legW*.95),y1;
+    if(!$("foot").checked) y1=[...ys].reverse().find(y=>Rr[y]-Lr[y]>legW*.92);
+    else{y1=ys.find(y=>y>y0+span*.1&&Rr[y]-Lr[y]>legW*1.03);y1=(y1||b)-2}
+    const usable=y1-y0;y0=Math.round(y0+usable*top);y1=Math.round(y1-usable*bot);
+    if(y1-y0<10)throw new Error("O recorte ficou vazio. Diminui os cortes.");
+    const raw=[];for(let y=y0;y<y1;y++)raw.push(Lr[y]>=0?Lr[y]:(raw.length?raw[raw.length-1]:0));
+    const k=15;for(let i=0;i<raw.length;i++){let s=0,n=0;for(let j=-k;j<=k;j++){const v=raw[Math.min(raw.length-1,Math.max(0,i+j))];s+=v;n++}L.push(s/n)}
+    const m=legW*ins+3;SW=Math.max(8,Math.round(legW-2*m));
+    for(let y=y0;y<y1;y++){rows.push(y);R.push(Rr[y]>=0?Rr[y]-m:1e9)}
+    L=L.map(v=>v+m);
+  }else{
+    const x0=Math.round(w*ins),x1=Math.round(w*(1-ins)),y0=Math.round(h*top),y1=Math.round(h*(1-bot));
+    if(y1-y0<10||x1-x0<8)throw new Error("O recorte ficou vazio. Diminui os cortes.");
+    SW=x1-x0;for(let y=y0;y<y1;y++){rows.push(y);L.push(x0);R.push(1e9)}
+  }
+  // amostrar faixa, reduzida para no máx. 420 de largura
+  const sc=Math.min(1,420/SW),ow=Math.round(SW*sc),oh=Math.round(rows.length*sc);
+  const out=new Float32Array(ow*oh*3),outside=new Uint8Array(ow*oh);
+  for(let oy=0;oy<oh;oy++){
+    const ry=Math.min(rows.length-1,Math.floor(oy/sc)),y=rows[ry];
+    for(let ox=0;ox<ow;ox++){
+      const sx=L[ry]+ox/sc,xi=Math.min(w-1,Math.max(0,Math.floor(sx))),i=(y*w+xi)*4,o=(oy*ow+ox)*3;
+      if(sx>R[ry])outside[oy*ow+ox]=1;
+      out[o]=d[i];out[o+1]=d[i+1];out[o+2]=d[i+2];
+    }}
+  // fora da meia (calcanhar) -> cor de fundo mediana
+  const samp=[[],[],[]];for(let i=0;i<ow*oh;i+=7)if(!outside[i])for(let c2=0;c2<3;c2++)samp[c2].push(out[i*3+c2]);
+  const bg=samp.map(median);for(let i=0;i<ow*oh;i++)if(outside[i]){out[i*3]=bg[0];out[i*3+1]=bg[1];out[i*3+2]=bg[2]}
+  S.region={rows,L,SW,w,h};
+  return {w:ow,h:oh,d:out};
+}
+function medianFilter(img,r){
+  if(!r)return img;const{w,h,d}=img,o=new Float32Array(d.length),buf=[];
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++)for(let c=0;c<3;c++){
+    buf.length=0;
+    for(let j=-r;j<=r;j++){const yy=Math.min(h-1,Math.max(0,y+j));for(let i=-r;i<=r;i++){const xx=Math.min(w-1,Math.max(0,x+i));buf.push(d[(yy*w+xx)*3+c])}}
+    buf.sort((a,b)=>a-b);o[(y*w+x)*3+c]=buf[buf.length>>1]}
+  return{w,h,d:o}}
+function areaResize(img,W,H){
+  const{w,h,d}=img,o=new Float32Array(W*H*3),fx=w/W,fy=h/H;
+  for(let Y=0;Y<H;Y++){const ya=Y*fy,yb=ya+fy;for(let X=0;X<W;X++){const xa=X*fx,xb=xa+fx;let r=0,g=0,b=0,n=0;
+    for(let y=Math.floor(ya);y<Math.min(h,Math.ceil(yb));y++){const wy=Math.min(yb,y+1)-Math.max(ya,y);
+      for(let x=Math.floor(xa);x<Math.min(w,Math.ceil(xb));x++){const wt=wy*(Math.min(xb,x+1)-Math.max(xa,x)),i=(y*w+x)*3;r+=d[i]*wt;g+=d[i+1]*wt;b+=d[i+2]*wt;n+=wt}}
+    const p=(Y*W+X)*3;o[p]=r/n;o[p+1]=g/n;o[p+2]=b/n}}
+  return{w:W,h:H,d:o}}
+
+/* ---------- cores ---------- */
+function lab(r,g,b){const f=v=>{v/=255;return v>.04045?((v+.055)/1.055)**2.4:v/12.92};r=f(r);g=f(g);b=f(b);
+  let x=(r*.4124+g*.3576+b*.1805)/.95047,y=r*.2126+g*.7152+b*.0722,z=(r*.0193+g*.1192+b*.9505)/1.08883;
+  const q=t=>t>.008856?Math.cbrt(t):7.787*t+16/116;x=q(x);y=q(y);z=q(z);return[116*y-16,500*(x-y),200*(y-z)]}
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function kmeans(img,K){
+  const n=img.w*img.h,P=new Float32Array(n*3);for(let i=0;i<n;i++){const l=lab(img.d[i*3],img.d[i*3+1],img.d[i*3+2]);P.set(l,i*3)}
+  const rand=rng(7),C=[];const first=Math.floor(rand()*n);C.push([P[first*3],P[first*3+1],P[first*3+2]]);
+  const D=new Float32Array(n).fill(Infinity);
+  while(C.length<K){const c=C[C.length-1];let tot=0;for(let i=0;i<n;i++){const dd=(P[i*3]-c[0])**2+(P[i*3+1]-c[1])**2+(P[i*3+2]-c[2])**2;if(dd<D[i])D[i]=dd;tot+=D[i]}
+    let t=rand()*tot,j=0;for(;j<n-1;j++){t-=D[j];if(t<=0)break}C.push([P[j*3],P[j*3+1],P[j*3+2]])}
+  const A=new Uint8Array(n);
+  for(let it=0;it<20;it++){const s=C.map(()=>[0,0,0,0,0,0,0]);
+    for(let i=0;i<n;i++){let b=0,bd=Infinity;for(let k=0;k<K;k++){const c=C[k],dd=(P[i*3]-c[0])**2+(P[i*3+1]-c[1])**2+(P[i*3+2]-c[2])**2;if(dd<bd){bd=dd;b=k}}
+      A[i]=b;const z=s[b];z[0]+=P[i*3];z[1]+=P[i*3+1];z[2]+=P[i*3+2];z[3]++;z[4]+=img.d[i*3];z[5]+=img.d[i*3+1];z[6]+=img.d[i*3+2]}
+    s.forEach((z,k)=>{if(z[3])C[k]=[z[0]/z[3],z[1]/z[3],z[2]/z[3]]});
+    if(it===19)return s.map((z,k)=>z[3]?[z[4]/z[3],z[5]/z[3],z[6]/z[3]].map(Math.round):[0,0,0])}
+}
+function assign(img,pal){
+  const L=pal.map(c=>lab(...c)),n=img.w*img.h,A=new Uint8Array(n);
+  for(let i=0;i<n;i++){const p=lab(img.d[i*3],img.d[i*3+1],img.d[i*3+2]);let b=0,bd=Infinity;
+    L.forEach((c,k)=>{const dd=(p[0]-c[0])**2+(p[1]-c[1])**2+(p[2]-c[2])**2;if(dd<bd){bd=dd;b=k}});A[i]=b}
+  return A}
+function cleanIsolated(A,W,H,passes){
+  for(let p=0;p<passes;p++){const N=A.slice();
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){const v=A[y*W+x],cnt={};let same=0;
+      for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){if(!i&&!j)continue;const yy=Math.min(H-1,Math.max(0,y+j)),xx=Math.min(W-1,Math.max(0,x+i)),u=A[yy*W+xx];if(u===v)same++;cnt[u]=(cnt[u]||0)+1}
+      if(same===0){let bk=v,bc=0;for(const k in cnt)if(cnt[k]>bc){bc=cnt[k];bk=+k}if(bc>=6)N[y*W+x]=bk}}
+    A=N}
+  return A}
+
+/* Separa o fundo dos contornos: o preto ligado ao fundo continua fundo;
+   o preto fechado dentro das figuras passa à cor mais escura (contorno),
+   excepto buracos de uma só cor (letras). Pontinhos soltos vão para o fundo. */
+function comps(mask,W,H){const lab=new Int32Array(W*H).fill(-1),out=[],q=new Int32Array(W*H);
+  for(let s=0;s<W*H;s++){if(!mask[s]||lab[s]>=0)continue;let h=0,t=0;q[t++]=s;lab[s]=out.length;const px=[];
+    while(h<t){const p=q[h++];px.push(p);const x=p%W,y=(p-x)/W;
+      if(x>0&&mask[p-1]&&lab[p-1]<0){lab[p-1]=out.length;q[t++]=p-1}
+      if(x<W-1&&mask[p+1]&&lab[p+1]<0){lab[p+1]=out.length;q[t++]=p+1}
+      if(y>0&&mask[p-W]&&lab[p-W]<0){lab[p-W]=out.length;q[t++]=p-W}
+      if(y<H-1&&mask[p+W]&&lab[p+W]<0){lab[p+W]=out.length;q[t++]=p+W}}
+    out.push(px)}
+  return out}
+function separateBg(A,W,H,pal,bg){
+  let outline=-1,best=1e9;pal.forEach((p,k)=>{if(k===bg)return;const l=p[0]*.3+p[1]*.59+p[2]*.11;if(l<best){best=l;outline=k}});
+  if(outline<0)return A;
+  const fg=k=>k>=0&&k<W*H&&A[k]!==bg,gap=new Uint8Array(W*H),work=A.slice();
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x;if(A[p]!==bg)continue;
+    const L=x>0,R=x<W-1,U=y>0,D=y<H-1;
+    if((L&&R&&fg(p-1)&&fg(p+1))||(U&&D&&fg(p-W)&&fg(p+W))||(L&&R&&U&&D&&((fg(p-W-1)&&fg(p+W+1))||(fg(p-W+1)&&fg(p+W-1))))){gap[p]=1;work[p]=outline}}
+  const nb=(p,f)=>{const x=p%W;if(x>0)f(p-1);if(x<W-1)f(p+1);if(p>=W)f(p-W);if(p<W*(H-1))f(p+W)};
+  for(const c of comps(work.map(v=>v===bg?1:0),W,H)){
+    if(c.length>=0.01*W*H)continue;
+    const cnt={};let n=0,o=0;
+    for(const p of c)nb(p,q=>{if(work[q]!==bg&&!gap[q]){cnt[work[q]]=(cnt[work[q]]||0)+1;n++;if(work[q]===outline)o++}});
+    const dom=n?Math.max(...Object.values(cnt))/n:1;
+    if(n&&(o/n>0.35||dom<0.6))for(const p of c)work[p]=outline;
+    else for(const p of c)nb(p,q=>{if(gap[q])work[q]=bg});
+  }
+  for(const c of comps(work.map(v=>v!==bg?1:0),W,H))if(c.length<=2)for(const p of c)work[p]=bg;
+  return work}
+
+/* ---------- pipeline ---------- */
+let pending=0;
+function run(){clearTimeout(pending);pending=setTimeout(()=>{try{process();status("")}catch(e){status(e.message,true)}},60)}
+function process(){
+  if(!S.img)return;
+  const W=Math.max(8,Math.min(400,Math.round(+$("w").value||100))),K=Math.max(2,Math.min(16,Math.round(+$("k").value||7)));
+  const R=+$("ratio").value;
+  const strip=medianFilter(extract(),+$("med").value);
+  const H=Math.max(1,Math.round(strip.h*W/strip.w*R));
+  const small=areaResize(strip,W,H);
+  if(!S.locked||!S.pal||S.pal.length!==K){
+    let pal=kmeans(small,K),A=assign(small,pal);
+    const cnt=pal.map((_,k)=>0);A.forEach(v=>cnt[v]++);
+    const order=pal.map((_,k)=>k).sort((a,b)=>cnt[b]-cnt[a]);pal=order.map(k=>pal[k]);S.pal=pal;S.locked=false}
+  let A=assign(small,S.pal);A=cleanIsolated(A,W,H,+$("iso").value);
+  if($("sepbg").checked)A=separateBg(A,W,H,S.pal,0);
+  const double=document.querySelector("input[name=full]:checked").value==="double";
+  if(double){const B=new Uint8Array(W*2*H);for(let y=0;y<H;y++){B.set(A.subarray(y*W,y*W+W),y*W*2);B.set(A.subarray(y*W,y*W+W),y*W*2+W)}A=B}
+  S.idx=A;S.W=double?W*2:W;S.H=H;
+  drawSrc();drawPattern();drawPalette();
+}
+
+/* ---------- desenhar ---------- */
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function drawSrc(){
+  const c=$("srcC"),im=S.img,sc=360/im.width;c.width=360;c.height=Math.round(im.height*sc);
+  const g=c.getContext("2d");g.drawImage(im,0,0,c.width,c.height);
+  const r=S.region;if(!r)return;g.strokeStyle="#21a35b";g.lineWidth=2;g.beginPath();
+  const n=r.rows.length;
+  for(let i=0;i<n;i+=3){const x=r.L[i]*sc,y=r.rows[i]*sc;i?g.lineTo(x,y):g.moveTo(x,y)}
+  for(let i=n-1;i>=0;i-=3)g.lineTo((r.L[i]+r.SW)*sc,r.rows[i]*sc);
+  g.closePath();g.stroke()}
+function drawPattern(){
+  const z=+$("zoom").value,asp=$("aspect").checked,R=+$("ratio").value;
+  const cw=z,ch=asp?Math.max(1,Math.round(z/R*100)/100):z;
+  const W=S.W,H=S.H,c=$("patC");c.width=Math.round(W*cw);c.height=Math.round(H*ch);
+  const g=c.getContext("2d");g.imageSmoothingEnabled=false;
+  const tmp=document.createElement("canvas");tmp.width=W;tmp.height=H;const tg=tmp.getContext("2d"),id=tg.createImageData(W,H);
+  const bgv=$("bgprev").value,bgc=$("bgprevOn").checked?[1,3,5].map(i=>parseInt(bgv.slice(i,i+2),16)):null;
+  for(let i=0;i<W*H;i++){const p=(bgc&&S.idx[i]===0)?bgc:S.pal[S.idx[i]];id.data.set([p[0],p[1],p[2],255],i*4)}
+  tg.putImageData(id,0,0);g.drawImage(tmp,0,0,c.width,c.height);
+  if($("grid").checked&&z>=4){
+    g.fillStyle="rgba(0,0,0,.28)";for(let x=1;x<W;x++)g.fillRect(Math.round(x*cw),0,1,c.height);for(let y=1;y<H;y++)g.fillRect(0,Math.round(y*ch),c.width,1);
+    g.fillStyle=css("--grid");for(let x=10;x<W;x+=10)g.fillRect(Math.round(x*cw),0,1,c.height);for(let y=10;y<H;y+=10)g.fillRect(0,Math.round(y*ch),c.width,1);
+    if(W>(+$("w").value)){g.fillStyle="#ff3b6b";g.fillRect(Math.round(W/2*cw)-1,0,2,c.height)}}
+}
+const hex=p=>"#"+p.map(v=>v.toString(16).padStart(2,"0")).join("");
+function drawPalette(){
+  const cnt=S.pal.map(()=>0);S.idx.forEach(v=>cnt[v]++);const tot=S.idx.length;
+  $("dims").textContent=S.W+" × "+S.H+" pontos";
+  $("summary").innerHTML=`<div><b>${S.W}</b> pontos de largura</div><div><b>${S.H}</b> carreiras</div><div><b>${S.pal.length}</b> cores</div>`;
+  const box=$("pal");box.innerHTML="";
+  outPal().forEach((p,k)=>{const d=document.createElement("div");d.className="sw";
+    d.innerHTML=`<input type="color" id="col${k}" value="${hex(p)}" aria-label="Cor ${k}"><span class="idx">${k} · ${hex(p)}</span><button type="button" title="Juntar à cor mais parecida">juntar</button><span class="cnt">${cnt[k]} pts · ${(cnt[k]/tot*100).toFixed(1)}%</span>`;
+    d.querySelector("input").addEventListener("change",e=>{const v=e.target.value;
+      if(k===0&&$("bgprevOn").checked){$("bgprev").value=v;drawPattern();drawPalette();return}S.pal[k]=[1,3,5].map(i=>parseInt(v.slice(i,i+2),16));S.locked=true;run()});
+    const b=d.querySelector("button");b.disabled=S.pal.length<=2;
+    b.addEventListener("click",()=>{S.pal.splice(k,1);S.locked=true;$("k").value=S.pal.length;run()});
+    box.appendChild(d)});
+  $("palNote").textContent=S.locked?"Paleta fixa (editada à mão). «Recalcular cores» volta a escolher as cores automaticamente.":"Clica numa cor para a mudar, ou «juntar» para a fundir com a mais parecida.";
+}
+
+/* ---------- exportar ---------- */
+/* BMP com paleta só das cores usadas: 4 bits até 16 cores, 8 bits acima */
+function bmp8(){const W=S.W,H=S.H,K=S.pal.length,bits=K<=16?4:8,rb=bits===4?Math.ceil(W/2):W,rs=(rb+3)&~3,off=54+K*4,size=off+rs*H,b=new ArrayBuffer(size),v=new DataView(b);
+  v.setUint8(0,66);v.setUint8(1,77);v.setUint32(2,size,true);v.setUint32(10,off,true);
+  v.setUint32(14,40,true);v.setInt32(18,W,true);v.setInt32(22,H,true);v.setUint16(26,1,true);v.setUint16(28,bits,true);
+  v.setUint32(34,rs*H,true);v.setInt32(38,2835,true);v.setInt32(42,2835,true);v.setUint32(46,K,true);v.setUint32(50,K,true);
+  outPal().forEach((p,k)=>{v.setUint8(54+k*4,p[2]);v.setUint8(55+k*4,p[1]);v.setUint8(56+k*4,p[0])});
+  const u=new Uint8Array(b);
+  for(let y=0;y<H;y++){const src=S.idx.subarray((H-1-y)*W,(H-y)*W),o=off+y*rs;
+    if(bits===8)u.set(src,o);else for(let x=0;x<W;x+=2)u[o+(x>>1)]=(src[x]<<4)|(x+1<W?src[x+1]:0)}
+  return u}
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u,c=0xFFFFFFFF){for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&255]^(c>>>8);return c}
+function png8(){const W=S.W,H=S.H,raw=new Uint8Array((W+1)*H);for(let y=0;y<H;y++){raw[y*(W+1)]=0;raw.set(S.idx.subarray(y*W,y*W+W),y*(W+1)+1)}
+  const blocks=[];for(let i=0;i<raw.length;i+=65535){const part=raw.subarray(i,i+65535),last=i+65535>=raw.length,h=new Uint8Array(5);h[0]=last?1:0;h[1]=part.length&255;h[2]=part.length>>8;h[3]=~part.length&255;h[4]=(~part.length>>8)&255;blocks.push(h,part)}
+  let a=1,b2=0;for(const x of raw){a=(a+x)%65521;b2=(b2+a)%65521}
+  const ad=new Uint8Array([b2>>8,b2&255,a>>8,a&255]),z=cat([new Uint8Array([0x78,1]),...blocks,ad]);
+  const chunk=(type,data)=>{const t=new TextEncoder().encode(type),len=new Uint8Array(4),cr=new Uint8Array(4);new DataView(len.buffer).setUint32(0,data.length);
+    new DataView(cr.buffer).setUint32(0,(crc32(data,crc32(t))^0xFFFFFFFF)>>>0);return cat([len,t,data,cr])};
+  const ih=new Uint8Array(13),dv=new DataView(ih.buffer);dv.setUint32(0,W);dv.setUint32(4,H);ih[8]=8;ih[9]=3;
+  const pl=new Uint8Array(S.pal.length*3);outPal().forEach((p,k)=>pl.set(p,k*3));
+  return cat([new Uint8Array([137,80,78,71,13,10,26,10]),chunk("IHDR",ih),chunk("PLTE",pl),chunk("IDAT",z),chunk("IEND",new Uint8Array(0))])}
+function cat(arr){let n=0;arr.forEach(a=>n+=a.length);const o=new Uint8Array(n);let p=0;arr.forEach(a=>{o.set(a,p);p+=a.length});return o}
+function csv(){let s="";for(let y=0;y<S.H;y++)s+=Array.from(S.idx.subarray(y*S.W,(y+1)*S.W)).join(",")+"\n";return s}
+/* paleta exportada: cor 0 (fundo) trocada pela cor escolhida, se ativo */
+function bgColor(){if(!$("bgprevOn").checked)return null;const v=$("bgprev").value;return[1,3,5].map(i=>parseInt(v.slice(i,i+2),16))}
+function outPal(){const b=bgColor();return S.pal.map((p,k)=>k===0&&b?b:p)}
+function legend(){return "indice,cor,pontos\n"+outPal().map((p,k)=>`${k},${hex(p)},${S.idx.filter(v=>v===k).length}`).join("\n")+"\n"}
+function zip(files){const enc=new TextEncoder(),loc=[],cen=[];let off=0;
+  for(const f of files){const nm=enc.encode(f.name),d=f.data,c=(crc32(d)^0xFFFFFFFF)>>>0,h=new Uint8Array(30),v=new DataView(h.buffer);
+    v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint32(14,c,true);v.setUint32(18,d.length,true);v.setUint32(22,d.length,true);v.setUint16(26,nm.length,true);
+    loc.push(h,nm,d);const ch=new Uint8Array(46),cv=new DataView(ch.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);
+    cv.setUint32(16,c,true);cv.setUint32(20,d.length,true);cv.setUint32(24,d.length,true);cv.setUint16(28,nm.length,true);cv.setUint32(42,off,true);cen.push(ch,nm);off+=30+nm.length+d.length}
+  const cd=cat(cen),e=new Uint8Array(22),ev=new DataView(e.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cd.length,true);ev.setUint32(16,off,true);
+  return cat([...loc,cd,e])}
+async function save(filename,data){
+  if(window.Neutralino&&window.NL_TOKEN!==undefined){
+    try{const ext=filename.split(".").pop();
+      const p=await Neutralino.os.showSaveDialog("Guardar ficheiro",{defaultPath:filename,filters:[{name:ext.toUpperCase(),extensions:[ext]}]});
+      if(!p){status("Descarga cancelada.");return}
+      const u=data instanceof Uint8Array?data:new Uint8Array(data);
+      await Neutralino.filesystem.writeBinaryFile(p,u.buffer.slice(u.byteOffset,u.byteOffset+u.byteLength));status("Guardado: "+p)}
+    catch(e){status("Não foi possível guardar: "+(e.message||e.code||e),true)}
+    return}
+  let dl=null;try{dl=window.claude?.use?await window.claude.use("downloads"):null}catch(e){}
+  if(dl){try{await dl.save({filename,data:new Blob([data])});status("Guardado: "+filename)}catch(e){status(e.code==="declined"?"Descarga cancelada.":"Não foi possível guardar ("+(e.code||"erro")+").",e.code!=="declined")}return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data]));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);status("Guardado: "+filename)}
+const base=()=>`${S.name}_${S.W}x${S.H}_${S.pal.length}cores`;
+$("dlZip").addEventListener("click",()=>{if(!S.idx)return;const b=base(),e=new TextEncoder();
+  save(b+".zip",zip([{name:b+".bmp",data:bmp8()},{name:b+".png",data:png8()},{name:b+"_mapa.csv",data:e.encode(csv())},{name:b+"_cores.csv",data:e.encode(legend())}]))});
+/* BMP solto só fora do claude.ai (lá a extensão .bmp não é permitida; vai no ZIP) */
+if(!window.claude)$("dlBmp").hidden=false;
+$("dlBmp").addEventListener("click",()=>{if(S.idx)save(base()+".bmp",bmp8())});
+$("dlPng").addEventListener("click",()=>{if(S.idx)save(base()+".png",png8())});
+$("recalc").addEventListener("click",()=>{S.locked=false;run()});
+
+/* ---------- controlos ---------- */
+const fmt={ratio:v=>(+v).toFixed(2).replace(".",","),top:v=>v+"%",bot:v=>v+"%",inset:v=>v+"%",thr:v=>v,med:v=>v,iso:v=>v,zoom:v=>v};
+for(const id in fmt){const el=$(id);const upd=()=>{$(id+"V").textContent=fmt[id](el.value)};upd();
+  el.addEventListener("input",()=>{upd();id==="zoom"?drawPattern():run()})}
+["w","k"].forEach(id=>$(id).addEventListener("change",()=>{if(id==="k")S.locked=false;run()}));
+document.querySelectorAll("input[name=mode],input[name=full]").forEach(r=>r.addEventListener("change",run));
+$("foot").addEventListener("change",run);$("sepbg").addEventListener("change",run);
+["bgprev","bgprevOn"].forEach(id=>$(id).addEventListener("input",()=>{if(S.idx){drawPattern();drawPalette()}}));
+["grid","aspect"].forEach(id=>$(id).addEventListener("change",drawPattern));
+
+if(SAMPLE)loadImageURL(SAMPLE).then(i=>{S.img=toCanvas(i);run()}).catch(()=>{});
+</script>
+</body></html>
